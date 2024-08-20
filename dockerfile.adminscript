@@ -1,0 +1,19 @@
+FROM node:18.20.4-alpine
+
+WORKDIR /app
+
+COPY package.json ./
+COPY yarn.lock ./
+
+RUN yarn install --frozen-lockfile
+
+COPY . .
+
+RUN yarn nx run adminscript:build:production
+
+CMD ["node", "dist/adminscript/main.js"]
+
+
+
+
+

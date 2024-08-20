@@ -56,7 +56,7 @@
           "inspect": "inspect-brk"
         },
         "production": {
-          "buildTarget": "adminscript:build:production"
+          "buildTarget": "adminscript:build:production",
         }
       }
     }

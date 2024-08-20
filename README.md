@@ -81,8 +81,12 @@ And join the Nx community:
 
 https://jobandtalent.engineering/how-to-debug-dockerized-typescript-applications-in-vscode-a0c2357d1e0d
 
+docker build -t testn -f dockerfile.adminscript .
+
 ### to start in debugger
 
 yarn nx run adminscript:serve:development-brk
 
 launch debugger from VSCode
+
+
