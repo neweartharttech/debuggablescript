@@ -27,6 +27,7 @@
       },
       "configurations": {
         "development": {},
+        "development-brk": {},
         "production": {
           "esbuildOptions": {
             "sourcemap": false,
@@ -47,7 +48,12 @@
       },
       "configurations": {
         "development": {
-          "buildTarget": "adminscript:build:development"
+          "buildTarget": "adminscript:build:development",
+          "inspect": false
+        },
+        "development-brk": {
+          "buildTarget": "adminscript:build:development",
+          "inspect": "inspect-brk"
         },
         "production": {
           "buildTarget": "adminscript:build:production"

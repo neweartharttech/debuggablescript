@@ -1,6 +1,5 @@
 const main = async () => {
     console.log("i am running async 4");
-    debugger;
     process.exit(0);
   };
   
