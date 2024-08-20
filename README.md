@@ -80,3 +80,9 @@ And join the Nx community:
 ## My notes
 
 https://jobandtalent.engineering/how-to-debug-dockerized-typescript-applications-in-vscode-a0c2357d1e0d
+
+### to start in debugger
+
+npx --node-options="--inspect-brk=9229" nx serve adminscript
+
+yarn nx run adminscript:serve --configuration=development
