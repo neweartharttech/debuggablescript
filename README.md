@@ -19,3 +19,8 @@ launch debugger from VSCode
 test a change
 
 
+### creating new from boilerplate
+`yarn nx g remove adminscript-e2e`
+`yarn nx g @nx/workspace:move --project adminscript --destination {NEW_PROJECT}`
+
+

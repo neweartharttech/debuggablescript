@@ -1,7 +1,7 @@
 {
-  "name": "adminscript",
+  "name": "sync-hubspot",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "adminscript/src",
+  "sourceRoot": "sync-hubspot/src",
   "projectType": "application",
   "tags": [],
   "targets": {
@@ -11,12 +11,12 @@
       "defaultConfiguration": "production",
       "options": {
         "platform": "node",
-        "outputPath": "dist/adminscript",
+        "outputPath": "dist/sync-hubspot",
         "format": ["cjs"],
         "bundle": false,
-        "main": "adminscript/src/main.ts",
-        "tsConfig": "adminscript/tsconfig.app.json",
-        "assets": ["adminscript/src/assets"],
+        "main": "sync-hubspot/src/main.ts",
+        "tsConfig": "sync-hubspot/tsconfig.app.json",
+        "assets": ["sync-hubspot/src/assets"],
         "generatePackageJson": true,
         "esbuildOptions": {
           "sourcemap": true,
@@ -43,20 +43,20 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "adminscript:build",
+        "buildTarget": "sync-hubspot:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "adminscript:build:development",
+          "buildTarget": "sync-hubspot:build:development",
           "inspect": false
         },
         "development-brk": {
-          "buildTarget": "adminscript:build:development",
+          "buildTarget": "sync-hubspot:build:development",
           "inspect": "inspect-brk"
         },
         "production": {
-          "buildTarget": "adminscript:build:production",
+          "buildTarget": "sync-hubspot:build:production"
         }
       }
     }
