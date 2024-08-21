@@ -34,7 +34,15 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["adminscript-e2e/**/*"]
+      "exclude": ["adminscript-e2e/**/*", "dumphigh-e2e/**/*"]
+    },
+    {
+      "plugin": "@nx/webpack/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview"
+      }
     }
   ]
 }
