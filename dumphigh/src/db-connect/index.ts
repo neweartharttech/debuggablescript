@@ -3,7 +3,13 @@ import tmp from 'tmp';
 import fs, { promises as fsP } from 'fs';
 import { escape as sqlEscape } from 'sqlstring';
 
-const _tmpName = tmp.tmpNameSync();
+const tmpFileName = tmp.tmpNameSync();
+
+type ProcessStatus = 'started' | 'completed';
+
+let processStartedAt: Date|undefined = undefined;
+
+let processStatus: ProcessStatus | undefined = undefined;
 
 type User = {
   _id: string;
@@ -24,20 +30,47 @@ export class DbExporter {
   }
 
   async dumpDb() {
-    console.log('Hello, dd 2');
 
-    console.log('Using tmp file ', _tmpName);
+    if (undefined === processStatus) {
+      processStatus = 'started';
+      processStartedAt = new Date();
 
-    const fileExists = fs.existsSync(_tmpName);
+        console.log("Process Started at ", processStartedAt);
+
+      const status = await Promise.race([
+        (async () => {
+          await this.dumpDbInternal();
+
+          processStatus = 'completed';
+
+          return processStatus;
+        })(),
+        new Promise<ProcessStatus>((_, r) =>
+          setTimeout(() => r('Process Started try again in few'), 1000 * 1)
+        ),
+      ]);
+    }
+
+    return {
+      processStatus,
+      tmpFileName,
+      processStartedAt
+    };
+  }
+
+  private async dumpDbInternal() {
+    console.log('Using tmp file ', tmpFileName);
+
+    const fileExists = fs.existsSync(tmpFileName);
 
     var writer = fs.createWriteStream('log.txt', {
       flags: 'a', // 'a' means appending (old data will be preserved)
     });
 
     if (fileExists) {
-      console.warn(`${_tmpName} exists`);
+      console.warn(`${tmpFileName} exists`);
     } else {
-      console.log(`${_tmpName} creating new`);
+      console.log(`${tmpFileName} creating new`);
     }
 
     try {
@@ -54,7 +87,7 @@ export class DbExporter {
   `translated` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL\
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;\n';
 
-        fsP.appendFile(_tmpName, toWrite);
+        fsP.appendFile(tmpFileName, toWrite);
       }
 
       const database = this._connection.db('teeptalk');
@@ -78,13 +111,23 @@ export class DbExporter {
             sentLanguage: string;
             translatedText: Record<string, string>;
           };
-        }[] = (await chatMessages.find().limit(5).toArray()) as any;
+        }[] = (await chatMessages
+          .find({ sqldumped: { $ne: tmpFileName } })
+          .limit(50)
+          .toArray()) as any;
+
+        if(messages.length === 0){
+            console.log("All messages are done");
+            break;
+        }
+
+        const messageIds = messages.map((m) => m._id);
 
         const senderIds = messages.map((m) => m.metaData.senderId);
         const receptIds = messages.map((m) => m.metaData.recepientId);
 
         const allUserId = [...senderIds, ...receptIds];
-        console.log('All users ', JSON.stringify(allUserId));
+        //console.log('All users ', JSON.stringify(allUserId));
 
         const loadedUserIds = Object.keys(usersMap);
 
@@ -92,7 +135,7 @@ export class DbExporter {
           (id) => !loadedUserIds.includes(id)
         );
 
-        console.log('usersToGet ', JSON.stringify(usersToGet));
+        //console.log('usersToGet ', JSON.stringify(usersToGet));
 
         const foundUsers: User[] = (await usersDb
           .find({ _id: { $in: usersToGet.map((id) => new ObjectId(id)) } })
@@ -109,21 +152,20 @@ export class DbExporter {
             usersMap[m.metaData.recepientId]?.authCreds?.loginname;
 
           if (!recipientId) {
-            console.warn(
+            /*console.warn(
               `missing user ${m.metaData.recepientId} ::`,
               JSON.stringify(usersMap[m.metaData.recepientId])
-            );
+            );*/
           }
 
           const senderId = usersMap[m.metaData.senderId]?.authCreds?.loginname;
 
           if (!senderId) {
-            console.warn(
+            /*console.warn(
               `missing user ${m.metaData.senderId} ::`,
               JSON.stringify(usersMap[m.metaData.senderId])
-            );
+            );*/
           }
-
 
           /*
                     INSERT INTO `chat_messages` (`id`, `recipientId`, `senderId`, `sentAt`, `text`, `sentLanguage`, `translated`) VALUES
@@ -146,12 +188,23 @@ export class DbExporter {
 
         //console.log("TYE LINE \n", sqlLines.join("\n") );
 
-        fsP.appendFile(_tmpName, sqlLines.join('\n') + '\n');
+        fsP.appendFile(tmpFileName, sqlLines.join('\n') + '\n');
 
-        break;
+        const done = await chatMessages.updateMany(
+          { _id: { $in: messageIds.map((id) => new ObjectId(id.toString())) } },
+          { $set: { sqldumped: tmpFileName } }
+        );
+
+        console.log('Done for count ', done.modifiedCount);
+
+        /*
+        if (it > 3) {
+          break;
+        }
+          */
       }
 
-      console.log('Completed in tmp file ', _tmpName);
+      console.log('Completed in tmp file ', tmpFileName);
     } finally {
       writer.end();
     }
