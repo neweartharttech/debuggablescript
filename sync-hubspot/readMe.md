@@ -7,3 +7,9 @@ https://developers.hubspot.com/docs/api/private-apps
     crm.lists read/write
     crm.schemas.contacts read/write
 
+
+# notes
+
+https://developers.hubspot.com/docs/api/crm/contacts
+https://developers.hubspot.com/docs/api/crm/contacts
+
