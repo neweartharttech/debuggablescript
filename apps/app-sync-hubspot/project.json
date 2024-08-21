@@ -1,7 +1,7 @@
 {
-  "name": "sync-hubspot",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "sync-hubspot/src",
+  "name": "app-sync-hubspot",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/app-sync-hubspot/src",
   "projectType": "application",
   "tags": [],
   "targets": {
@@ -11,12 +11,12 @@
       "defaultConfiguration": "production",
       "options": {
         "platform": "node",
-        "outputPath": "dist/sync-hubspot",
+        "outputPath": "dist/apps/app-sync-hubspot",
         "format": ["cjs"],
         "bundle": false,
-        "main": "sync-hubspot/src/main.ts",
-        "tsConfig": "sync-hubspot/tsconfig.app.json",
-        "assets": ["sync-hubspot/src/assets"],
+        "main": "apps/app-sync-hubspot/src/main.ts",
+        "tsConfig": "apps/app-sync-hubspot/tsconfig.app.json",
+        "assets": ["apps/app-sync-hubspot/src/assets"],
         "generatePackageJson": true,
         "esbuildOptions": {
           "sourcemap": true,
@@ -43,20 +43,20 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "sync-hubspot:build",
+        "buildTarget": "app-sync-hubspot:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "sync-hubspot:build:development",
+          "buildTarget": "app-sync-hubspot:build:development",
           "inspect": false
         },
         "development-brk": {
-          "buildTarget": "sync-hubspot:build:development",
+          "buildTarget": "app-sync-hubspot:build:development",
           "inspect": "inspect-brk"
         },
         "production": {
-          "buildTarget": "sync-hubspot:build:production"
+          "buildTarget": "app-sync-hubspot:build:production"
         }
       }
     }
