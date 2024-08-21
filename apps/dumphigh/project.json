@@ -1,7 +1,7 @@
 {
-  "name": "dumphigh",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "dumphigh/src",
+  "name": "app-dumphigh",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/dumphigh/src",
   "projectType": "application",
   "tags": [],
   "targets": {
@@ -10,15 +10,15 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "dumphigh:build",
+        "buildTarget": "app-dumphigh:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "dumphigh:build:development"
+          "buildTarget": "app-dumphigh:build:development"
         },
         "production": {
-          "buildTarget": "dumphigh:build:production"
+          "buildTarget": "app-dumphigh:build:production"
         }
       }
     }

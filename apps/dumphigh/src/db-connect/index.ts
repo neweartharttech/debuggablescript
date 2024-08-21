@@ -7,7 +7,7 @@ const tmpFileName = tmp.tmpNameSync();
 
 type ProcessStatus = 'started' | 'completed';
 
-let processStartedAt: Date|undefined = undefined;
+let processStartedAt: Date | undefined = undefined;
 
 let processStatus: ProcessStatus | undefined = undefined;
 
@@ -30,12 +30,11 @@ export class DbExporter {
   }
 
   async dumpDb() {
-
     if (undefined === processStatus) {
       processStatus = 'started';
       processStartedAt = new Date();
 
-        console.log("Process Started at ", processStartedAt);
+      console.log('Process Started at ', processStartedAt);
 
       const status = await Promise.race([
         (async () => {
@@ -54,7 +53,7 @@ export class DbExporter {
     return {
       processStatus,
       tmpFileName,
-      processStartedAt
+      processStartedAt,
     };
   }
 
@@ -116,9 +115,9 @@ export class DbExporter {
           .limit(50)
           .toArray()) as any;
 
-        if(messages.length === 0){
-            console.log("All messages are done");
-            break;
+        if (messages.length === 0) {
+          console.log('All messages are done');
+          break;
         }
 
         const messageIds = messages.map((m) => m._id);

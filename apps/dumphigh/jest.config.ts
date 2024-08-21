@@ -1,11 +1,11 @@
 /* eslint-disable */
 export default {
-  displayName: 'dumphigh',
-  preset: '../jest.preset.js',
+  displayName: 'app-dumphigh',
+  preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../coverage/dumphigh',
+  coverageDirectory: '../../coverage/apps/dumphigh',
 };

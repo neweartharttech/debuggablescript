@@ -12,25 +12,20 @@ const app = express();
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get('/api', async (req, res) => {
-
-  try{
+  try {
     const exporter = new DbExporter();
     const ret = await exporter.dumpDb();
 
-    if(ret.processStatus === 'completed'){
-      res.download(ret.tmpFileName,"highschool_chat_messages.sql");
-      return;  
+    if (ret.processStatus === 'completed') {
+      res.download(ret.tmpFileName, 'highschool_chat_messages.sql');
+      return;
     }
 
-
-    res.send({success:true,   ret});
-    
-  
-  }catch(ex){
-    console.error("FAILED req", ex);
-    res.send({success:false, message:ex.message||ex.toString()});
+    res.send({ success: true, ret });
+  } catch (ex) {
+    console.error('FAILED req', ex);
+    res.send({ success: false, message: ex.message || ex.toString() });
   }
-  
 });
 
 const port = process.env.PORT || 3333;
