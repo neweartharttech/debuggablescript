@@ -5,13 +5,19 @@
 
 import express from 'express';
 import * as path from 'path';
+import { DbExporter } from './db-connect';
 
 const app = express();
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-app.get('/api', (req, res) => {
-  res.send({ message: 'Welcome to dumphigh!' });
+app.get('/api', async (req, res) => {
+
+  const exporter = new DbExporter();
+
+  await exporter.dumpDb();
+
+  res.send({ message: 'Welcome to dumphighww!' });
 });
 
 const port = process.env.PORT || 3333;
