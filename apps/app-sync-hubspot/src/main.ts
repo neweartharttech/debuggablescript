@@ -1,6 +1,23 @@
 import { Client } from '@hubspot/api-client';
+import { taskStarter, waitWithHeartBeat } from '@ne/lib-common-utils';
+import { consumeNewArtist } from './consumeNewArtist';
+
 
 const main = async () => {
+
+  await taskStarter({
+    "consumeNewArtistSignup":async () =>{
+      console.log(" starting consumeNewArtistSignup")
+      await consumeNewArtist();
+      await waitWithHeartBeat("consumeNewArtistSignup");
+    }
+  });
+
+  // await doHUbSpot();
+  process.exit(0);
+};
+
+async function doHUbSpot(){
   console.log('Staring sync');
 
   const token = process.env.MY_HUBSPOT_TOKEN;
@@ -17,8 +34,9 @@ const main = async () => {
   console.log('Got contact ', JSON.stringify(test.results, null, 2));
 
   console.log('Done sync');
-  process.exit(0);
-};
+
+}
+
 
 main().catch((err) => {
   console.error(err);

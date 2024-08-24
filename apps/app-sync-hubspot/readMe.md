@@ -1,3 +1,16 @@
+# Local dev
+
+export MY_HUBSPOT_TOKEN=XXXX
+docker-compose up -d mongo rabbitmq
+
+yarn nx run app-sync-hubspot:serve:development --args="consumeNewArtistSignup"
+
+- To run with break point
+
+yarn nx run app-sync-hubspot:serve:development-brk
+start debug from visual studio code
+
+
 # creating hubspot private app
 
 - create private app using settings
@@ -9,5 +22,4 @@
 
 # notes
 
-https://developers.hubspot.com/docs/api/crm/contacts
 https://developers.hubspot.com/docs/api/crm/contacts

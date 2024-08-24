@@ -49,7 +49,8 @@
       "configurations": {
         "development": {
           "buildTarget": "app-sync-hubspot:build:development",
-          "inspect": false
+          "inspect": "inspect",
+          "port": 9229
         },
         "development-brk": {
           "buildTarget": "app-sync-hubspot:build:development",
