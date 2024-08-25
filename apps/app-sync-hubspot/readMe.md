@@ -5,6 +5,8 @@ docker-compose up -d mongo rabbitmq
 
 yarn nx run app-sync-hubspot:serve:development --args="consumeNewArtistSignup"
 
+yarn nx run app-sync-hubspot:serve:development --args="getNewArtistSignUps"
+
 - To run with break point
 
 yarn nx run app-sync-hubspot:serve:development-brk

@@ -1,6 +1,7 @@
 import { Client } from '@hubspot/api-client';
 import { taskStarter, waitWithHeartBeat } from '@ne/lib-common-utils';
-import { consumeNewArtist } from './consumeNewArtist';
+import { consumeNewArtist } from './new-artist-signup/consume-event';
+import { loadNewSignUpsFromDb } from './new-artist-signup/read-from-db';
 
 
 const main = async () => {
@@ -10,7 +11,8 @@ const main = async () => {
       console.log(" starting consumeNewArtistSignup")
       await consumeNewArtist();
       await waitWithHeartBeat("consumeNewArtistSignup");
-    }
+    },
+    "getNewArtistSignUps":loadNewSignUpsFromDb
   });
 
   // await doHUbSpot();

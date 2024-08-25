@@ -3,31 +3,42 @@
 import { Filter, MongoClient } from 'mongodb';
 
 type TDoc = {
-    processedTags : Record<string,Date>;
-}
+  _id: string;
+  processedTags?: Record<string, Date>;
+};
 
 export class ProcessFromMongo {
-  private uri = process.env.MONGO_CONNECTION || 'mongodb://localhost';
+  private uri =
+    process.env.MONGO_CONNECTION ||
+    'mongodb://localhost:27017/?directConnection=true';
   private connection = new MongoClient(this.uri);
 
-  constructor(private config: {
-    dbName : string;
-    processTag : string;
-    batchSize?: number
-  }) {
+  constructor(
+    private config: {
+      dbName: string;
+      processTag: string;
+      collectionName: string;
+      batchSize?: number;
+    }
+  ) {
     console.log('using connection ', this.uri);
   }
 
-  private async batchProc(){
+  async batchProc<T extends TDoc>(
+    callback: (batch: T[]) => Promise<void>,
+    lookup?: any[],
+    pass?: number
+  ) {
     const database = this.connection.db(this.config.dbName);
-    const chatMessages = database.collection<TDoc>('chatmessages');
+    const collection = database.collection<TDoc>(this.config.collectionName);
 
-    const tagField  = `processedTags.${this.config.processTag}`;
+    console.log('batchProc Pass >', pass || 0);
+
+    const tagField = `processedTags.${this.config.processTag}`;
 
     const filter: Filter<TDoc> = {};
-    filter[tagField] = {$not:{$exists:true}};
+    filter[tagField] = { $not: { $exists: true } };
 
-    
     /*
         db.creatorProfiles.aggregate([{$match:{"details.name":"Bahar Acharjya"}},{$limit:3}]).pretty();
 
@@ -35,25 +46,48 @@ export class ProcessFromMongo {
             {$lookup:{from:"users",localField:"managedByUserIds",foreignField:"_id",as:"managers"}},   
             {$limit:3}]).pretty();
 
+        const lookup = {
+                $lookup: {
+                  from: 'users',
+                  localField: 'managedByUserIds',
+                  foreignField: '_id',
+                  as: 'managers',
+                },
+              };
     */
 
-    const messages= (await chatMessages
-        .find(filter)
-        .limit(this.config.batchSize||50)
-        .toArray()) ;
+    let pipeline: any[] = [{ $match: filter }];
 
-        //do something with it
-        const messageIds = messages.map((m) => m._id);
+    if (lookup) {
+      pipeline = [...pipeline, ...lookup];
+    }
 
-        const toSet: Record<string,Date> = {};
-        toSet[tagField] = new Date();
+    pipeline = [...pipeline, { $limit: this.config.batchSize || 50 }];
 
-        const done = await chatMessages.updateMany(
-            { _id: { $in: messageIds } },
-            { $set: toSet }
-          );
-  
-          console.log('Done for count ', done.modifiedCount);
-  
+    const messages: T[] = (await collection
+      .aggregate(pipeline)
+      .toArray()) as T[];
+
+    if (messages.length === 0) {
+      console.log('batchProc batch length 0');
+      return;
+    }
+
+    await callback(messages);
+
+    //do something with it
+    const messageIds = messages.map((m) => m._id);
+
+    const toSet: Record<string, Date> = {};
+    toSet[tagField] = new Date();
+
+    const done = await collection.updateMany(
+      { _id: { $in: messageIds } },
+      { $set: toSet }
+    );
+
+    console.log('Done for count ', done.modifiedCount);
+
+    await this.batchProc(callback, lookup, (pass || 0) + 1);
   }
 }

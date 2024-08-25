@@ -1,11 +1,12 @@
 import * as ampq from 'amqplib';
 
-export type NeMessageQBase = {
+export type NeMessageQBase<T> = {
   retryCount?: number;
   error?: string;
+  payload: T
 };
 
-export class NeMessageQ<T extends NeMessageQBase> {
+export class NeMessageQ<T> {
   private config = {
     server: process.env.RABBIT_CONNECTION || 'amqp://localhost',
     exchange: process.env.RABBIT_EXCHANGE || 'neAdmin',
@@ -22,9 +23,10 @@ export class NeMessageQ<T extends NeMessageQBase> {
 
   private channel: ampq.Channel | undefined;
 
-  private async init() {
+  async init() {
     if (this.channel) {
-      console.debug('NeMessageQ:init Channel already initialized');
+      //console.debug('NeMessageQ:init Channel already initialized');
+      return this.channel;
     }
 
     const credentials = ampq.credentials.plain(
@@ -80,7 +82,12 @@ export class NeMessageQ<T extends NeMessageQBase> {
     return this.channel;
   }
 
-  async publish(data: T) {
+  async publish(payload: T) {
+
+    const data : NeMessageQBase<T> = {
+      payload
+    };
+
     if (
       !(await this.init()).publish(
         this.config.exchange,
@@ -95,15 +102,15 @@ export class NeMessageQ<T extends NeMessageQBase> {
     }
   }
 
-  async consume(callBack: (msg: T) => void) {
+  async consume(callBack: (payload: T) => void) {
     if (!this.routing.qName) {
       throw new Error('Not initialized with qName');
     }
 
     (await this.init()).consume(this.routing.qName, (msg) => {
-      let msgObject: T;
+      let msgObject: NeMessageQBase<T>;
       try {
-        msgObject = JSON.parse(msg.content.toString()) as T;
+        msgObject = JSON.parse(msg.content.toString()) as NeMessageQBase<T>;
       } catch (error) {
         console.error('NeMessageQ:consume json failed ', error);
         this.channel.nack(msg, false);
@@ -119,13 +126,13 @@ export class NeMessageQ<T extends NeMessageQBase> {
           return;
         }
 
-        callBack(msgObject);
+        callBack(msgObject.payload);
 
 
       } catch (error) {
         console.warn(`NeMessageQ:consume failed : ${msg.fields.deliveryTag}`, error);
         
-        const toPublish: T = {
+        const toPublish: NeMessageQBase<T> = {
           ...msgObject,
           retryCount: retryCount + 1,
           error: error.toString(),

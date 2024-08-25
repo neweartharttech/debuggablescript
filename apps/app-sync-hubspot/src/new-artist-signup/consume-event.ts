@@ -1,19 +1,16 @@
 import { NeMessageQ } from "@ne/lib-common-utils";
+import { messageQRoutingKey } from "./setup";
 
 export async function consumeNewArtist(){
 
     const messageQ = new NeMessageQ({
-        key:'newArtistSubscribed',
+        key:messageQRoutingKey,
         qName:'hubSpotSync_newArtistSubscribed'
     });
 
     await messageQ.consume(msg=>{
         
         console.log("consumeNewArtist::consuming ", JSON.stringify(msg));
-
-        if(msg.retryCount > 2){
-            return;
-        }
 
         throw new Error("I failed");
     });
