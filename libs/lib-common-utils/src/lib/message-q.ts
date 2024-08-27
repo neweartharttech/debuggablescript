@@ -1,10 +1,14 @@
 import * as ampq from 'amqplib';
 
 export type NeMessageQBase<T> = {
-  retryCount?: number;
-  error?: string;
   payload: T
 };
+
+type NeMsgHeader =   {
+  retryCount?: number;
+  error?: string;
+}
+
 
 export class NeMessageQ<T> {
   private config = {
@@ -102,12 +106,12 @@ export class NeMessageQ<T> {
     }
   }
 
-  async consume(callBack: (payload: T) => void) {
+  async consume(callBack: (payload: T) => Promise<void>) {
     if (!this.routing.qName) {
       throw new Error('Not initialized with qName');
     }
 
-    (await this.init()).consume(this.routing.qName, (msg) => {
+    (await this.init()).consume(this.routing.qName, async (msg) => {
       let msgObject: NeMessageQBase<T>;
       try {
         msgObject = JSON.parse(msg.content.toString()) as NeMessageQBase<T>;
@@ -116,7 +120,9 @@ export class NeMessageQ<T> {
         this.channel.nack(msg, false);
       }
 
-      const retryCount: number = msgObject.retryCount || 0;
+      const neHeader = msg.properties.headers as NeMsgHeader;
+
+      const retryCount: number =   neHeader.retryCount || 0;
 
       try {
         if (retryCount > 3) {
@@ -126,7 +132,7 @@ export class NeMessageQ<T> {
           return;
         }
 
-        callBack(msgObject.payload);
+        await callBack(msgObject.payload);
 
 
       } catch (error) {
@@ -134,13 +140,17 @@ export class NeMessageQ<T> {
         
         const toPublish: NeMessageQBase<T> = {
           ...msgObject,
+        };
+
+        const newHeaders : NeMsgHeader = {
           retryCount: retryCount + 1,
           error: error.toString(),
         };
 
         try {
           this.channel.sendToQueue(this.routing.qName, Buffer.from(JSON.stringify(toPublish)),{
-            persistent:true
+            persistent:true,
+            headers:newHeaders
           });
         } catch (pubError) {
           console.error('Failed to republish ', pubError);

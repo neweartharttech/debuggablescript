@@ -36,7 +36,7 @@ export async function loadNewSignUpsFromDb() {
   },{
     $project:{
         _id:1,
-        name:1,
+        "details.name":1,
         "managers.email":1
     }
   }]);

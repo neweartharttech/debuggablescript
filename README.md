@@ -24,3 +24,6 @@ test a change
 `yarn nx g @nx/workspace:move --project adminscript --destination {NEW_PROJECT}`
 
 
+
+
+

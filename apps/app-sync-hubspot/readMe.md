@@ -25,3 +25,5 @@ start debug from visual studio code
 # notes
 
 https://developers.hubspot.com/docs/api/crm/contacts
+
+db.creatorProfiles.updateMany({},{$unset:{processedTags:1}});
