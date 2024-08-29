@@ -8,7 +8,7 @@
 
 https://jobandtalent.engineering/how-to-debug-dockerized-typescript-applications-in-vscode-a0c2357d1e0d
 
-docker build -t testn -f dockerfile.adminscript .
+docker build -f Dockerfile.release-sync-hubspot -t test1 --platform linux/amd64 .  
 
 ### to start in debugger
 
@@ -22,6 +22,7 @@ test a change
 ### creating new from boilerplate
 `yarn nx g remove adminscript-e2e`
 `yarn nx g @nx/workspace:move --project adminscript --destination {NEW_PROJECT}`
+
 
 
 
