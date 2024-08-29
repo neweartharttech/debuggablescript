@@ -9,6 +9,8 @@ RUN yarn install
 
 COPY . .
 
-#RUN yarn nx build app-sync-hubspot
+RUN rm .yarnrc
 
-#ENTRYPOINT ["yarn" "nx" "run"]
+RUN yarn nx --skip-nx-cache build app-sync-hubspot
+
+ENTRYPOINT ["yarn" "nx" "--skip-nx-cache" "run"]
