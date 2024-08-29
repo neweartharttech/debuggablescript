@@ -27,12 +27,13 @@ jobs:
       with:
         token: ${{secrets.github_token}}    
 
+    - name: Generate build tag
+      id: buildtag
+      run: echo "build_tag=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME }}-${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
+
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      id: build
-      run: |
-        echo "build_tag=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME }}-${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
-        docker build -f Dockerfile.${{ env.BRANCH_NAME }} -t ${{ steps.build.outputs.build_tag }}
+      run: docker build -f Dockerfile.${{ env.BRANCH_NAME }} -t ${{ steps.buildtag.outputs.build_tag }}
 
     - name: Log in to Docker Hub
       uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -41,4 +42,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}      
 
     - name: Push Docker image
-      run: docker build -f Dockerfile.${{ env.BRANCH_NAME }} -t ${{ steps.build.outputs.build_tag }}
+      run: docker build -f Dockerfile.${{ env.BRANCH_NAME }} -t ${{ steps.buildtag.outputs.build_tag }}
