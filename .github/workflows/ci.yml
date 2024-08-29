@@ -72,8 +72,8 @@ jobs:
 
     - name: deploy k8 
       uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.DO_2_KUBE_CERTIFICATE }}
-        with:
-          args: apply -f path/to/artifact/k8.release-sync-hubspot.yml
+      env:
+        KUBE_CONFIG: ${{ secrets.DO_2_KUBE_CERTIFICATE }}
+      with:
+        args: apply -f path/to/artifact/k8.release-sync-hubspot.yml
 
