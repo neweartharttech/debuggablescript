@@ -12,9 +12,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
 
-permissions:
-  actions: read
-  contents: read
 
 jobs:
   build:
