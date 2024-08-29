@@ -43,3 +43,37 @@ jobs:
 
     - name: Push Docker image
       run: docker push ${{ steps.buildtag.outputs.build_tag }}
+
+    - name: create deploy file
+      run: |
+        mkdir -p path/to/artifact
+        cp deploy/k8.release-sync-hubspot.yml path/to/artifact/k8.release-sync-hubspot.yml
+        sed -i "s/__TAG_IMAGE__/${{ steps.buildtag.outputs.build_tag }}/" path/to/artifact/k8.release-sync-hubspot.yml
+
+    - uses: actions/upload-artifact@v2
+      name: Upload artifacts
+      with:
+        name: my-artifact
+        path: path/to/artifact
+        retention-days: 1    
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: my-artifact
+        path: path/to/artifacts
+
+    - name: deploy k8 
+      uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.DO_2_KUBE_CERTIFICATE }}
+        with:
+          args: apply -f path/to/artifact/k8.release-sync-hubspot.yml
+
