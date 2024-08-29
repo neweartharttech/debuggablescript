@@ -42,4 +42,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}      
 
     - name: Push Docker image
-      run: docker build -f Dockerfile.${{ env.BRANCH_NAME }} -t ${{ steps.buildtag.outputs.build_tag }}
+      run: docker push ${{ steps.buildtag.outputs.build_tag }}
