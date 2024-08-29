@@ -10,6 +10,8 @@ https://jobandtalent.engineering/how-to-debug-dockerized-typescript-applications
 
 docker build -f Dockerfile.release-sync-hubspot -t test1 --platform linux/amd64 .  
 
+node dist/apps/app-sync-hubspot/main.js consumeNewArtistSignup
+
 ### to start in debugger
 
 yarn nx run adminscript:serve:development-brk
