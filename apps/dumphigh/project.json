@@ -1,0 +1,26 @@
+{
+  "name": "app-dumphigh",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/dumphigh/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "app-dumphigh:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "app-dumphigh:build:development"
+        },
+        "production": {
+          "buildTarget": "app-dumphigh:build:production"
+        }
+      }
+    }
+  }
+}

@@ -14,7 +14,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@ne/lib-common-utils": ["libs/lib-common-utils/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

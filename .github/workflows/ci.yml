@@ -3,39 +3,75 @@ name: CI
 on:
   push:
     branches:
-      - main-disable-all-branches
-  pull_request:
-
+      - release-*
+      
 permissions:
-  actions: read
-  contents: read
+  contents: write
+
+env:
+  # Use docker.io for Docker Hub if empty
+  # REGISTRY: docker.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: newearthart/ne-admin-script
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+
 
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      
+    - name: Generate build number
+      id: buildnumber
+      uses: onyxmueller/build-tag-number@v1
+      with:
+        token: ${{secrets.github_token}}    
 
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/ci/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      - run: yarn nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="build"
-      
-      
-      # Cache node_modules
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'yarn'
-       
-      - run: yarn install --frozen-lockfile
-      - uses: nrwl/nx-set-shas@v4
+    - name: Generate build tag
+      id: buildtag
+      run: echo "build_tag=${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME }}-${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_OUTPUT
 
-      # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-      # - run: yarn nx-cloud record -- echo Hello World
-      # Nx Affected runs only tasks affected by the changes in this PR/commit. Learn more: https://nx.dev/ci/features/affected
-      - run: yarn nx affected -t lint test build
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: |
+        mkdir -p path/to/artifacts
+        cp deploy/k8.release-sync-hubspot.yml path/to/artifacts/k8.release-sync-hubspot.yml
+        sed -i "s|__TAG_IMAGE__|${{ steps.buildtag.outputs.build_tag }}|" path/to/artifacts/k8.release-sync-hubspot.yml
+        docker build -f Dockerfile.${{ env.BRANCH_NAME }} -t ${{ steps.buildtag.outputs.build_tag }} .
+
+    - uses: actions/upload-artifact@v2
+      name: Upload artifacts
+      with:
+        name: my-artifacts
+        path: path/to/artifacts
+        retention-days: 1    
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}      
+
+    - name: Push Docker image
+      run: docker push ${{ steps.buildtag.outputs.build_tag }}
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: my-artifacts
+        path: path/to/artifacts
+
+    - name: deploy k8 
+      uses: actions-hub/kubectl@master
+      env:
+        KUBE_CONFIG: ${{ secrets.DO_2_KUBE_CERTIFICATE }}
+      with:
+        args: apply -f path/to/artifacts/k8.release-sync-hubspot.yml
+

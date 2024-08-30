@@ -1,0 +1,65 @@
+{
+  "name": "app-sync-hubspot",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/app-sync-hubspot/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/app-sync-hubspot",
+        "format": ["cjs"],
+        "bundle": false,
+        "main": "apps/app-sync-hubspot/src/main.ts",
+        "tsConfig": "apps/app-sync-hubspot/tsconfig.app.json",
+        "assets": ["apps/app-sync-hubspot/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "development-brk": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "app-sync-hubspot:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "app-sync-hubspot:build:development",
+          "inspect": "inspect",
+          "port": 9229
+        },
+        "development-brk": {
+          "buildTarget": "app-sync-hubspot:build:development",
+          "inspect": "inspect-brk"
+        },
+        "production": {
+          "buildTarget": "app-sync-hubspot:build:production"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,137 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: clrbox-art-prod-mongo
+  namespace: ne-admin-scripts
+spec:
+  type: ExternalName
+  externalName: mongodb.art-access-pre-release.svc.cluster.local
+  ports:
+    - port: 27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: ne-admin-scripts
+spec:
+  ports:
+    - name: amqp
+      port: 5672
+      protocol: TCP
+  selector:
+    app: rabbitmq
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  namespace: ne-admin-scripts
+spec:
+  serviceName: rabbitmq
+  selector:
+    matchLabels:
+      app: rabbitmq
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: masstransit/rabbitmq:3.13.1
+          volumeMounts:
+            - mountPath: '/var/lib/rabbitmq/mnesia/'
+              name: mq-data
+
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: 'admin'
+            - name: RABBITMQ_DEFAULT_PASS
+              value: 'admin'
+
+  volumeClaimTemplates:
+    - metadata:
+        name: mq-data
+      spec:
+        accessModes: ['ReadWriteOnce']
+        resources:
+          requests:
+            storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sync-hubspot-comsumer
+  namespace: ne-admin-scripts
+  labels:
+    app: sync-hubspot-comsumer
+
+spec:
+  selector:
+    matchLabels:
+      app: sync-hubspot-comsumer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sync-hubspot-comsumer
+    spec:
+      containers:
+        - name: sync-hubspot-comsumer
+          image: __TAG_IMAGE__
+          #command: ["tail","-f","/dev/null"]
+          command:
+            [
+              'node',
+              'dist/apps/app-sync-hubspot/main.js',
+              'consumeNewArtistSignup',
+            ]
+
+          env:
+
+            - name: RABBIT_CONNECTION
+              value: 'amqp://rabbitmq'
+
+            - name: MY_HUBSPOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ne-admin-secrets
+                  key: MY_HUBSPOT_TOKEN
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sync-hubspot-load-newsignups
+  namespace: ne-admin-scripts
+spec:
+  schedule: '15 */4 * * *'
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: sync-hubspot-load-newsignups
+              image: __TAG_IMAGE__
+              command:
+                [
+                  'node',
+                  'dist/apps/app-sync-hubspot/main.js',
+                  'getNewArtistSignUps',
+                ]
+              env:
+                - name: MONGO_CONNECTION
+                  value: 'mongodb://clrbox-art-prod-mongo/?directConnection=true'
+
+                - name: RABBIT_CONNECTION
+                  value: 'amqp://rabbitmq'
+
+
+          restartPolicy: OnFailure
