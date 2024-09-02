@@ -1,7 +1,17 @@
 # This repo contains boilerplate code that can used to create debug-able  scripts hosted on k8 clusters
 
-- look for code in branches boilerplate/*
+## branch strategies
+
+1. boilerplate/*
+- Different boilerplate code that we can branch out of
+  look for code in branches boilerplate/*
   These branches are frozen and create a good start point
+
+2. release-****
+- living release branches probably with CI/CD built in, that is getting deployed at different places
+
+3. prod-hot-fix/*****
+- script used to create admin changes to DB to certain work. They might just be run locally
 
 
 ## Dev notes
