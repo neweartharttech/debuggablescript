@@ -20,10 +20,14 @@ launch debugger from VSCode
 
 test a change
 
+# Create new app in the project
+`yarn nx g application app-update-clrbx-mongo`
 
-### creating new from boilerplate
+# creating brand new workspace from boilerplate
 `yarn nx g remove adminscript-e2e`
 `yarn nx g @nx/workspace:move --project adminscript --destination {NEW_PROJECT}`
+
+
 
 
 

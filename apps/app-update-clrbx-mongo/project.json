@@ -1,0 +1,61 @@
+{
+  "name": "app-update-clrbx-mongo",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/app-update-clrbx-mongo/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/app-update-clrbx-mongo",
+        "format": ["cjs"],
+        "bundle": false,
+        "main": "apps/app-update-clrbx-mongo/src/main.ts",
+        "tsConfig": "apps/app-update-clrbx-mongo/tsconfig.app.json",
+        "assets": ["apps/app-update-clrbx-mongo/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "app-update-clrbx-mongo:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "app-update-clrbx-mongo:build:development",
+          "inspect": "inspect-brk",
+          "port": 9229
+
+        },
+        "production": {
+          "buildTarget": "app-update-clrbx-mongo:build:production"
+        }
+      }
+    }
+  }
+}
